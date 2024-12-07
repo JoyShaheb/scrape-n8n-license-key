@@ -1,19 +1,12 @@
 import crypto from "crypto";
 import fs from "fs";
 import forge from "node-forge";
+import NodeRSA from "node-rsa";
 
 // Generate RSA key pair
-const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
-  modulusLength: 2048,
-  publicKeyEncoding: {
-    type: "spki",
-    format: "pem",
-  },
-  privateKeyEncoding: {
-    type: "pkcs8",
-    format: "pem",
-  },
-});
+const key = new NodeRSA({ b: 2048 });
+const publicKey = key.exportKey("public");
+const privateKey = key.exportKey("private");
 
 // Create license data
 const licenseData = {
@@ -50,16 +43,21 @@ const licenseJson = JSON.stringify(licenseData);
 // Generate a 16-byte (128-bit) symmetric key
 const symmetricKey = crypto.randomBytes(16);
 
-// Convert the symmetric key to base64
-const symmetricKeyBase64 = symmetricKey.toString("base64");
-
-// Generate a random IV
-const iv = crypto.randomBytes(16);
+// Encrypt the symmetric key with the public key
+const rsaPublic = new NodeRSA();
+rsaPublic.importKey(publicKey, "public");
+// const encryptedSymmetricKey = rsaPublic.encrypt(symmetricKey, "base64");
+const encryptedSymmetricKey =
+  "nm8s75CYKxRXNEzrhwvZ7BpsZOoCWOP6SQSB70fqKUspN2fAdjTA+RrLkaP6vOPx5UYCfLplUFD0E3F2r3SJ9FUux2Tn1NRGyO5CxHx+6cluX9dld6R28fCaGrWKMnW4Ly3PwKcvLENb2yOcBy13UEn5+3HOJPZjaRLAEd0FqiAI44DhJnCJy/2MJskXK/D7YrMpc+119/IDYwBEubvjmPGCR0fEPrH3PbZ7G8TIc28aL3tl2MrJhmO1KeXAIcZsGqGP3cpDcMtjB4S2tK6faY/JHOFyv9iFLtjToqT0L8HYUSeX7dmGMMHya7zO5yRbG0Mq+tJUP08INGbHufaseA==||";
 
 // Encrypt the license data with the symmetric key using AES-128-CBC
+const iv = crypto.randomBytes(16);
 const cipher = crypto.createCipheriv("aes-128-cbc", symmetricKey, iv);
 let encryptedData = cipher.update(licenseJson, "utf8", "base64");
 encryptedData += cipher.final("base64");
+
+// Combine IV and encrypted data
+const ivAndEncryptedData = iv.toString("base64") + encryptedData;
 
 // Sign the license data
 const sign = crypto.createSign("SHA256");
@@ -69,9 +67,8 @@ const signature = sign.sign(privateKey, "base64");
 // Combine all parts into the license key format
 const licenseKey =
   "-----BEGIN LICENSE KEY-----" +
-  `${symmetricKeyBase64}||` +
-  `${iv.toString("base64")}||` +
-  `${encryptedData}||` +
+  `${encryptedSymmetricKey}||` +
+  `${ivAndEncryptedData}||` +
   `${signature}` +
   "-----END LICENSE KEY-----";
 
