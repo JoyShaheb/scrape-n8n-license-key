@@ -1,5 +1,20 @@
 import { LicenseManager } from "@n8n_io/license-sdk";
 import pino from "pino";
+import * as crypto from "crypto";
+import { AES } from "crypto-js";
+
+interface LicenseData {
+  id: string;
+  createdAt: string;
+  issuedAt: string;
+  expiresAt: string;
+  terminatesAt: string;
+  entitlements: Array<{
+    feature: string;
+    validFrom: string;
+    validTo: string;
+  }>;
+}
 
 // bring your own logger, e.g. Pino, Winston etc.
 const myLogger = pino();
@@ -29,3 +44,61 @@ license.initialize().then(async () => {
   // console.log(license.getIssuerCert());
   console.log(license.toString());
 });
+
+function generateLicenseKey(
+  data: LicenseData,
+  publicKey: string,
+  privateKey: string
+): string {
+  // Generate a random symmetric key
+  const symmetricKey = crypto.randomBytes(32).toString("hex");
+
+  // Encrypt the data with the symmetric key
+  const encryptedData = AES.encrypt(
+    JSON.stringify(data),
+    symmetricKey
+  ).toString();
+
+  // Encrypt the symmetric key with the public key
+  const encryptedSymmetricKey = crypto
+    .publicEncrypt(
+      { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+      Buffer.from(symmetricKey)
+    )
+    .toString("base64");
+
+  // Sign the encrypted data
+  const signer = crypto.createSign("RSA-SHA256");
+  signer.update(encryptedData);
+  const signature = signer.sign(privateKey, "base64");
+
+  // Construct the license key
+  const licenseKey = `-----BEGIN LICENSE KEY-----${encryptedSymmetricKey}||${encryptedData}||${signature}-----END LICENSE KEY-----`;
+
+  return licenseKey;
+}
+
+// Example usage
+const data: LicenseData = {
+  id: "some-unique-id",
+  createdAt: new Date().toISOString(),
+  issuedAt: new Date().toISOString(),
+  expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
+  terminatesAt: new Date(
+    Date.now() + 2 * 365 * 24 * 60 * 60 * 1000
+  ).toISOString(), // 2 years from now
+  entitlements: [
+    {
+      feature: "basic",
+      validFrom: new Date().toISOString(),
+      validTo: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ],
+};
+
+const publicKey = "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----";
+const privateKey =
+  "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----";
+
+const licenseKey = generateLicenseKey(data, publicKey, privateKey);
+console.log(licenseKey);
