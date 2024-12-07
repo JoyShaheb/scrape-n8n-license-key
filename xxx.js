@@ -3,17 +3,6 @@ import fs from "fs";
 import forge from "node-forge";
 import NodeRSA from "node-rsa";
 
-// var w = (r, e, t) => (
-//     (t = r != null ? b(A(r)) : {}),
-//     C(
-//       e || !r || !r.__esModule
-//         ? u(t, "default", { value: r, enumerable: !0 })
-//         : t,
-//       r
-//     )
-//   ),
-//   L = (r) => C(u({}, "__esModule", { value: !0 }), r);
-
 // Generate RSA key pair
 const key = new NodeRSA({ b: 2048 });
 const publicKey = key.exportKey("public");
