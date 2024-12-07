@@ -81,29 +81,31 @@ function generateLicenseCert(publicKey, privateKey, licenseKey) {
 
   const attrs = [
     {
-      name: "commonName",
-      value: "YourCompany License Authority",
-    },
-    {
       name: "countryName",
-      value: "US",
+      value: "DE",
     },
     {
       shortName: "ST",
-      value: "California",
+      value: "Berlin",
     },
     {
       name: "localityName",
-      value: "San Francisco",
+      value: "Berlin",
     },
     {
-      name: "organizationName",
-      value: "YourCompany",
+      name: "commonName",
+      //original issuer: 'C=DE\nST=Berlin\nL=Berlin\nCN=license.n8n.io',
+      // my one: issuer: 'CN=license.n8n.io\nC=DE\nST=Berlin\nL=Berlin',
+      value: "license.n8n.io",
     },
-    {
-      shortName: "OU",
-      value: "License Department",
-    },
+    // {
+    //   name: "organizationName",
+    //   value: "YourCompany",
+    // },
+    // {
+    //   shortName: "OU",
+    //   value: "License Department",
+    // },
   ];
 
   cert.setSubject(attrs);
