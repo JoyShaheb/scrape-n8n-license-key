@@ -3,6 +3,17 @@ import fs from "fs";
 import forge from "node-forge";
 import NodeRSA from "node-rsa";
 
+// var w = (r, e, t) => (
+//     (t = r != null ? b(A(r)) : {}),
+//     C(
+//       e || !r || !r.__esModule
+//         ? u(t, "default", { value: r, enumerable: !0 })
+//         : t,
+//       r
+//     )
+//   ),
+//   L = (r) => C(u({}, "__esModule", { value: !0 }), r);
+
 // Generate RSA key pair
 const key = new NodeRSA({ b: 2048 });
 const publicKey = key.exportKey("public");
@@ -46,9 +57,7 @@ const symmetricKey = crypto.randomBytes(16);
 // Encrypt the symmetric key with the public key
 const rsaPublic = new NodeRSA();
 rsaPublic.importKey(publicKey, "public");
-// const encryptedSymmetricKey = rsaPublic.encrypt(symmetricKey, "base64");
-const encryptedSymmetricKey =
-  "nm8s75CYKxRXNEzrhwvZ7BpsZOoCWOP6SQSB70fqKUspN2fAdjTA+RrLkaP6vOPx5UYCfLplUFD0E3F2r3SJ9FUux2Tn1NRGyO5CxHx+6cluX9dld6R28fCaGrWKMnW4Ly3PwKcvLENb2yOcBy13UEn5+3HOJPZjaRLAEd0FqiAI44DhJnCJy/2MJskXK/D7YrMpc+119/IDYwBEubvjmPGCR0fEPrH3PbZ7G8TIc28aL3tl2MrJhmO1KeXAIcZsGqGP3cpDcMtjB4S2tK6faY/JHOFyv9iFLtjToqT0L8HYUSeX7dmGMMHya7zO5yRbG0Mq+tJUP08INGbHufaseA==||";
+const encryptedSymmetricKey = rsaPublic.encrypt(symmetricKey, "base64");
 
 // Encrypt the license data with the symmetric key using AES-128-CBC
 const iv = crypto.randomBytes(16);
@@ -72,8 +81,8 @@ const licenseKey =
   `${signature}` +
   "-----END LICENSE KEY-----";
 
-console.log("License Key:");
-console.log(licenseKey);
+// console.log("License Key:");
+// console.log(licenseKey);
 
 // Generate licenseCert
 function generateLicenseCert(publicKey, privateKey, licenseKey) {
@@ -127,13 +136,65 @@ function generateLicenseCert(publicKey, privateKey, licenseKey) {
 }
 
 const licenseCert = generateLicenseCert(publicKey, privateKey, licenseKey);
-console.log("\nLicense Cert:");
-console.log(licenseCert);
+// console.log("\nLicense Cert:");
+// console.log(licenseCert);
 
 // Print the public key for verification
-console.log("\nPublic Key:");
-console.log(publicKey);
+// console.log("\nPublic Key:");
+// console.log(publicKey);
 
 // Save the private key to a file (keep this secure!)
 fs.writeFileSync("private_key.pem", privateKey);
-console.log("\nPrivate key saved to private_key.pem");
+// console.log("\nPrivate key saved to private_key.pem");
+
+/**
+ * ! Step 1: Decrypt the keys
+ * TODO: This is Perfect
+ */
+
+const { x509: t, licenseKey: licenseKeyNNNNNN } = JSON.parse(
+  Buffer.from(licenseCert, "base64").toString("ascii")
+);
+
+/**
+ * ! Step 2, figure out subject, issuer, validity dates and other properties
+ * TODO: This is Perfect
+ */
+
+let x509Cert = new crypto.X509Certificate(t);
+
+/**
+ * ! Step 3
+ * TODO: This is Perfect
+ */
+
+let s = x509Cert.publicKey.export({
+  format: "pem",
+  type: "pkcs1",
+});
+
+/**
+ * ! Step 4
+ * TODO: This is Perfect
+ */
+
+let dontKnow = new NodeRSA(s);
+
+/**
+ * ! Step 5
+ * TODO: WIP
+ */
+
+let e = licenseKeyNNNNNN.replace(/(\r\n|\n|\r)/gm, "");
+let matched = e.match(
+  /^-----BEGIN LICENSE KEY-----(?<encryptedSymmetricKey>.+\|\|)(?<encryptedData>.+)\|\|(?<signature>.+)-----END LICENSE KEY-----$/
+);
+
+let n = matched.groups.encryptedSymmetricKey,
+  i = matched.groups.encryptedData,
+  sss = matched.groups.signature,
+  a,
+  o;
+
+console.log(n);
+console.log(encryptedSymmetricKey);
