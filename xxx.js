@@ -167,7 +167,7 @@ let s = x509Cert.publicKey.export({
  * TODO: This is Perfect
  */
 
-let dontKnow = new NodeRSA(s);
+let thisKey = new NodeRSA(s);
 
 /**
  * ! Step 5
@@ -185,5 +185,6 @@ let n = matched.groups.encryptedSymmetricKey,
   a,
   o;
 
-console.log(n);
-console.log(encryptedSymmetricKey);
+a = thisKey.decrypt(n, "utf8");
+
+console.log(a);
