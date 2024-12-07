@@ -1,111 +1,71 @@
 import { LicenseManager } from "@n8n_io/license-sdk";
-import NodeRSA from "node-rsa";
-import { v4 as uuidv4 } from "uuid";
+import pino from "pino";
 
-// Generate RSA key pair
-const key = new NodeRSA({ b: 2048 });
-const publicKey = key.exportKey("public");
-const privateKey = key.exportKey("private");
+const myLogger = pino();
 
-const reservationId = "f9e725f6-aef6-445e-97fb-d6e7aabd65e7";
-
-// Create a simulated license
-function createSimulatedLicense() {
-  const licenseData = {
-    id: uuidv4(),
-    tenantId: 1, // Changed to string as some systems expect string IDs
-    productIdentifier: "demo-product",
-    consumerId: uuidv4(),
-    createdAt: new Date().toISOString(),
-    issuedAt: new Date().toISOString(),
-    expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    terminatesAt: new Date(
-      Date.now() + 2 * 365 * 24 * 60 * 60 * 1000
-    ).toISOString(),
-    entitlements: [
-      {
-        id: uuidv4(),
-        productId: "demo-product",
-        validFrom: new Date().toISOString(),
-        validTo: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        features: {
-          feature1: true,
-          feature2: 100,
-          feature3: "premium",
-        },
-      },
-    ],
-  };
-
-  const licenseString = JSON.stringify(licenseData);
-  const encryptedData = key.encrypt(licenseString, "base64");
-  const signature = key.sign(licenseString, "base64");
-
-  return `-----BEGIN LICENSE KEY-----${encryptedData}||${signature}-----END LICENSE KEY-----`;
-}
-
-const simulatedLicenseKey = createSimulatedLicense();
-
-// Configuration for the LicenseManager
-const config = {
-  tenantId: 1,
-  productIdentifier: "demo-product",
-  deviceFingerprint: async () => "simulated-device-fingerprint",
-  saveCertStr: async (certStr) => {
-    // console.log("Saving cert:", certStr);
-  },
+const license = new LicenseManager({
+  // server: "https://license.your-server.com",
+  tenantId: 1, // referencing to resp. license-server entity
+  productIdentifier: "Demo Product v1.2.3", // must regex-match cert.productIdentifierPattern
+  autoRenewEnabled: true,
+  renewOnInit: false,
+  autoRenewOffset: 60 * 60 * 48, // = 48 hours
+  logger: myLogger,
   loadCertStr: async () => {
-    const certStr = Buffer.from(
-      JSON.stringify({
-        licenseKey: simulatedLicenseKey,
-        x509: `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`,
-      })
-    ).toString("base64");
-    // console.log("Loading cert:", certStr);
-    return certStr;
+    // code that returns a stored cert string from DB
+    return "...";
   },
-  offlineMode: false,
-};
+  saveCertStr: async (cert) => {
+    // code that persists a cert string into the DB
+    // ...
+  },
+  deviceFingerprint: () => "a-unique-instance-id", //optional! If omitted, a machine-ID fingerprint will be generated
+  onFeatureChange: () =>
+    console.log("availability of some features has just changed"), //optional
+});
 
-// Create a LicenseManager instance
-const licenseManager = new LicenseManager(config);
+// important! Attempts to load and initialize the cert:
+await license.initialize();
 
-// Function to simulate license activation
-async function activateLicense() {
-  try {
-    await licenseManager.initialize();
-    console.log("LicenseManager initialized");
+// without a valid cert, no feature will be available:
+if (license.hasFeatureEnabled("a-special-feature")) {
+  // this code will never execute!
+}
 
-    // Simulate activation with a dummy reservation ID
-    await licenseManager.activate("simulated-reservation-id");
-    console.log("License activated successfully (simulated)");
-  } catch (error) {
-    console.error("License activation failed:", error.message);
+license.isValid(); // -> false
+
+license.getFeatureValue("another-feature"); // -> undefined
+
+license.getFeatures(); // -> []
+
+// ------ ACTIVATION ------
+
+try {
+  // download a license key by 'activating' a reservation.
+  // Reservations are typically configured to be activatable only once.
+  await license.activate("3fa85f64-5717-4562-b3fc-2c963f66afa6");
+
+  license.isValid(); // -> true
+
+  license.getFeatureValue("foo"); // -> 'bar'
+
+  if (license.hasFeatureEnabled("a-feature-that-exists")) {
+    //do stuff
   }
+
+  const currentConsumption = getUsageFromSomewhere();
+
+  if (license.hasQuotaLeft("quota:demoQuota", currentConsumption)) {
+    //do stuff
+  }
+
+  // print a human-readable string representation.
+  console.log(`${license}`);
+} catch (e) {
+  // handle error...
 }
 
-// Function to get and display all features
-function getAllFeatures() {
-  const features = licenseManager.getFeatures();
-  console.log("All features:", features);
-  return features;
-}
-
-// Main function to demonstrate the license management process
-async function main() {
-  // Initialize and "activate" the license
-  await activateLicense();
-
-  // Get and display features
-  getAllFeatures();
-
-  // Check if the license is valid
-  console.log("Is license valid?", licenseManager.isValid());
-
-  // Display additional license information
-  console.log("License expiry date:", licenseManager.getExpiryDate());
-  console.log("License termination date:", licenseManager.getTerminationDate());
-}
-
-// Run the demonstration
-main().catch(console.error);
+// ------ RENEWAL ------
+// renewals happen automatically based on the config options `autoRenewEnabled` and `autoRenewOffset`
+// but can also be enforced, as long as the current cert is not yet terminated:
+await license.renew();
