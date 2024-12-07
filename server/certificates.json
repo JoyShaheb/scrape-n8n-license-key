@@ -1,0 +1,17 @@
+[
+  {
+    "id": "demo-cert-001",
+    "productIdentifier": "Demo Product v1.2.3",
+    "features": {
+      "a-special-feature": true,
+      "another-feature": "some value",
+      "foo": "bar"
+    },
+    "quotas": {
+      "quota:demoQuota": 1000
+    },
+    "validFrom": "2023-06-01T00:00:00Z",
+    "validUntil": "2026-01-06T08:20:56.617Z",
+    "activated": true
+  }
+]

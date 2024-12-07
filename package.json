@@ -1,0 +1,23 @@
+{
+  "name": "license-demo",
+  "version": "1.0.0",
+  "description": "Demo of license management with Express",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon server/index.js",
+    "client": "nodemon client/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@n8n_io/license-sdk": "^2.13.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2",
+    "nodemon": "^3.1.7",
+    "pino": "^9.5.0",
+    "pino-pretty": "^13.0.0"
+  }
+}
