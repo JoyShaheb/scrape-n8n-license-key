@@ -1,7 +1,7 @@
 import { LicenseManager } from "@n8n_io/license-sdk";
 import pino from "pino";
 import * as crypto from "crypto";
-import { AES } from "crypto-js";
+import CryptoJS from "crypto-js";
 
 interface LicenseData {
   id: string;
@@ -54,7 +54,7 @@ function generateLicenseKey(
   const symmetricKey = crypto.randomBytes(32).toString("hex");
 
   // Encrypt the data with the symmetric key
-  const encryptedData = AES.encrypt(
+  const encryptedData = CryptoJS.AES.encrypt(
     JSON.stringify(data),
     symmetricKey
   ).toString();
