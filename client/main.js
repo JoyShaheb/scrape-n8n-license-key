@@ -1,87 +1,60 @@
 import { LicenseManager } from "@n8n_io/license-sdk";
-import pino from "pino";
-import crypto from "crypto";
+import { v4 as uuidv4 } from "uuid";
 
-const logger = pino();
-
-const LICENSE_SERVER = "http://localhost:3003";
-const TENANT_ID = 1;
-const PRODUCT_IDENTIFIER = "Demo Product v1.0";
-const ACTIVATION_KEY = "demo-activation-key";
-
-// Function to generate a mock certificate
-function generateMockCertificate() {
-  const now = Math.floor(Date.now() / 1000);
-  const oneYearFromNow = now + 365 * 24 * 60 * 60;
-
-  const cert = {
-    iss: LICENSE_SERVER,
-    sub: TENANT_ID.toString(),
-    aud: PRODUCT_IDENTIFIER,
-    exp: oneYearFromNow,
-    iat: now,
-    jti: crypto.randomBytes(16).toString("hex"),
-    features: {
-      "feature-a": true,
-      "feature-b": false,
-      "max-users": 10,
-    },
-  };
-
-  return Buffer.from(JSON.stringify(cert)).toString("base64");
-}
-
-const license = new LicenseManager({
-  server: LICENSE_SERVER,
-  tenantId: TENANT_ID,
-  productIdentifier: PRODUCT_IDENTIFIER,
-  autoRenewEnabled: true,
-  renewOnInit: false,
-  autoRenewOffset: 60 * 60 * 24, // 24 hours
-  logger,
+// Configuration for the LicenseManager
+const config = {
+  tenantId: 1,
+  productIdentifier: "your-product-identifier",
+  // server: "http://localhost:3003", // Use the actual license server URL
+  saveCertStr: async (certStr) => {
+    // In a real scenario, you'd save this securely
+    console.log("Saving cert:", certStr);
+  },
   loadCertStr: async () => {
-    // In a real scenario, you'd load the saved certificate from a database or file
-    // For this example, we'll generate a mock certificate
-    logger.info("Loading certificate...");
-    const cert = generateMockCertificate();
-    logger.info("Certificate loaded:", cert);
-    return cert;
+    // In a real scenario, you'd load the saved cert
+    return null; // Simulating no saved cert for this example
   },
-  saveCertStr: async (cert) => {
-    // In a real scenario, you'd save the certificate to a database or file
-    logger.info("Saving certificate:", cert);
-  },
-});
+};
 
-async function main() {
+// Create a LicenseManager instance
+const licenseManager = new LicenseManager(config);
+
+// Function to simulate license activation
+async function activateLicense(activationKey) {
   try {
-    logger.info("Initializing license...");
-    await license.initialize();
-
-    console.log("License is valid:", license.isValid());
-    console.log("All features:", license.getFeatures());
-
-    // Check for specific features
-    const featureA = "feature-a";
-    const featureB = "feature-b";
-    logger.info(`Has ${featureA}:`, license.hasFeatureEnabled(featureA));
-    logger.info(`Has ${featureB}:`, license.hasFeatureEnabled(featureB));
-
-    // Get feature value
-    const quotaFeature = "max-users";
-    const quotaValue = license.getFeatureValue(quotaFeature);
-    logger.info(`${quotaFeature} value:`, quotaValue);
-
-    // Check quota
-    const currentUsers = 5;
-    if (license.hasQuotaLeft(quotaFeature, currentUsers)) {
-      logger.info(`Has quota left for ${quotaFeature}`);
-    } else {
-      logger.info(`No quota left for ${quotaFeature}`);
-    }
+    await licenseManager.activate(activationKey);
+    console.log("License activated successfully");
   } catch (error) {
-    logger.error("Error in main:", error);
+    console.error("License activation failed:", error.message);
   }
 }
 
-main().catch((error) => logger.error("Unhandled error:", error));
+// Function to get and display all features
+function getAllFeatures() {
+  const features = licenseManager.getFeatures();
+  console.log("All features:", features);
+  return features;
+}
+
+// Main function to demonstrate the license management process
+async function main() {
+  // Initialize the LicenseManager
+  await licenseManager.initialize();
+  console.log("LicenseManager initialized");
+
+  // Simulate an activation key (in a real scenario, this would come from your license server)
+  const simulatedActivationKey = uuidv4();
+  console.log("Simulated activation key:", simulatedActivationKey);
+
+  // Activate the license
+  await activateLicense(simulatedActivationKey);
+
+  // Get and display features
+  getAllFeatures();
+
+  // Check if the license is valid
+  console.log("Is license valid?", licenseManager.isValid());
+}
+
+// Run the demonstration
+main().catch(console.error);

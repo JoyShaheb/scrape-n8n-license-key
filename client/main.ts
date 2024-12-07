@@ -80,7 +80,7 @@ function isValidJSON(str) {
 // main().catch((error) => logger.error("Unhandled error:", error));
 
 const license = new LicenseManager({
-  server: "http://localhost:3003",
+  // server: "http://localhost:3003",
   tenantId: 1,
   autoRenewEnabled: true,
   autoRenewOffset: 60 * 60 * 48,
