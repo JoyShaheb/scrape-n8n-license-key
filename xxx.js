@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import fs from "fs";
+import forge from "node-forge";
 
 // Generate RSA key pair
 const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
@@ -65,12 +66,77 @@ const licenseKey =
   `${signature}` +
   "-----END LICENSE KEY-----";
 
+console.log("License Key:");
 console.log(licenseKey);
 
-// Also print the public key for verification
+// Generate licenseCert
+function generateLicenseCert(publicKey, privateKey, licenseKey) {
+  // Create a self-signed X.509 certificate
+  const cert = forge.pki.createCertificate();
+  cert.publicKey = forge.pki.publicKeyFromPem(publicKey);
+  cert.serialNumber = "01" + crypto.randomBytes(19).toString("hex");
+  cert.validity.notBefore = new Date();
+  cert.validity.notAfter = new Date();
+  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+
+  const attrs = [
+    {
+      name: "commonName",
+      value: "YourCompany License Authority",
+    },
+    {
+      name: "countryName",
+      value: "US",
+    },
+    {
+      shortName: "ST",
+      value: "California",
+    },
+    {
+      name: "localityName",
+      value: "San Francisco",
+    },
+    {
+      name: "organizationName",
+      value: "YourCompany",
+    },
+    {
+      shortName: "OU",
+      value: "License Department",
+    },
+  ];
+
+  cert.setSubject(attrs);
+  cert.setIssuer(attrs);
+
+  // Sign the certificate with the private key
+  cert.sign(forge.pki.privateKeyFromPem(privateKey), forge.md.sha256.create());
+
+  // Convert the certificate to PEM format
+  const pemCert = forge.pki.certificateToPem(cert);
+
+  // Create the license cert container
+  const licenseCertContainer = {
+    x509: pemCert,
+    licenseKey: licenseKey,
+  };
+
+  // Encode the container as base64
+  const licenseCertStr = Buffer.from(
+    JSON.stringify(licenseCertContainer)
+  ).toString("base64");
+
+  return licenseCertStr;
+}
+
+const licenseCert = generateLicenseCert(publicKey, privateKey, licenseKey);
+console.log("\nLicense Cert:");
+console.log(licenseCert);
+
+// Print the public key for verification
 console.log("\nPublic Key:");
 console.log(publicKey);
 
-// Optionally, save the private key to a file (keep this secure!)
+// Save the private key to a file (keep this secure!)
 fs.writeFileSync("private_key.pem", privateKey);
 console.log("\nPrivate key saved to private_key.pem");
