@@ -1,11 +1,11 @@
 import { LicenseManager } from "@n8n_io/license-sdk";
 import pino from "pino";
-import forge from "node-forge";
 
 // bring your own logger, e.g. Pino, Winston etc.
 const myLogger = pino();
 
 const license = new LicenseManager({
+  // server: "http://localhost:3004",
   tenantId: 1, // referencing to resp. license-server entity
   productIdentifier: "Demo Product v1.2.3", // must regex-match cert.productIdentifierPattern
   autoRenewEnabled: false,
