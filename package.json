@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon server/index.js",
-    "client": "nodemon client/index.js"
+    "client": "nodemon client/main.js"
   },
   "keywords": [],
   "author": "",

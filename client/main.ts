@@ -86,55 +86,13 @@ const license = new LicenseManager({
   autoRenewOffset: 60 * 60 * 48,
   logger,
   loadCertStr: async () => {
-    try {
-      logger.info(`Fetching license from ${SERVER_URL}/license/${LICENSE_ID}`);
-      const response = await fetch(`${SERVER_URL}/license/${LICENSE_ID}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const rawText = await response.text();
-      logger.debug("Raw response:", rawText);
-
-      if (!isValidJSON(rawText)) {
-        throw new Error("Invalid JSON received from server");
-      }
-
-      const parsedJSON = JSON.parse(rawText);
-      logger.debug("Parsed JSON:", parsedJSON);
-
-      const jsonString = JSON.stringify(parsedJSON);
-      const base64Encoded = Buffer.from(jsonString).toString("base64");
-      logger.debug("Base64 encoded license:", base64Encoded);
-
-      return base64Encoded;
-    } catch (error) {
-      logger.error("Error in loadCertStr:", error);
-      throw error;
-    }
+    return JSON.stringify({})
   },
   productIdentifier: "Demo Product v1.2.3",
   saveCertStr: async (cert) => {
     logger.info("Saving certificate:", cert);
   },
+
 });
 
-// console.log("license", license);
-license
-  .initialize()
-  .then(async (res) => {
-    console.log("res", res);
-
-    // console.log("license.isValid()", license.isValid());
-    // console.log("license.getFeatures()", license.getFeatures());
-    // console.log(
-    //   "license.hasFeatureEnabled('a-special-feature')",
-    //   license.hasFeatureEnabled("a-special-feature")
-    // );
-    // console.log(
-    //   "license.getFeatureValue('another-feature')",
-    //   license.getFeatureValue("another-feature")
-    // );
-  })
-  .catch((error) => {
-    console.log("error", error);
-  });
+console.log("license", license)
