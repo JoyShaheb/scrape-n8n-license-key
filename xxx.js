@@ -18,38 +18,46 @@ const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
 // Create license data
 const licenseData = {
   id: "12345",
+  consumerId: "your-consumer-id",
+  tenantId: "your-tenant-id",
+  productIdentifier: "your-product-identifier",
   createdAt: new Date().toISOString(),
   issuedAt: new Date().toISOString(),
   expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
   terminatesAt: new Date(Date.now() + 730 * 24 * 60 * 60 * 1000).toISOString(),
   entitlements: [
     {
-      feature: "premium",
+      id: "entitlement-id",
+      productId: "product-id",
       validFrom: new Date().toISOString(),
       validTo: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      features: {
+        premium: true,
+      },
+      featureOverrides: {},
     },
   ],
+  isEphemeral: false,
+  deviceFingerprint: "your-device-fingerprint",
+  deviceLock: true,
+  renewalToken: "your-renewal-token",
+  managementJwt: "your-management-jwt",
 };
 
 // Convert license data to JSON
 const licenseJson = JSON.stringify(licenseData);
 
-// Generate a random symmetric key
-const symmetricKey = crypto.randomBytes(32);
+// Generate a 16-byte (128-bit) symmetric key
+const symmetricKey = crypto.randomBytes(16);
 
-// Encrypt the symmetric key with the public RSA key
-const encryptedSymmetricKey = crypto.publicEncrypt(
-  {
-    key: publicKey,
-    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-    oaepHash: "sha256",
-  },
-  symmetricKey
-);
+// Convert the symmetric key to base64
+const symmetricKeyBase64 = symmetricKey.toString("base64");
 
-// Encrypt the license data with the symmetric key
+// Generate a random IV
 const iv = crypto.randomBytes(16);
-const cipher = crypto.createCipheriv("aes-256-cbc", symmetricKey, iv);
+
+// Encrypt the license data with the symmetric key using AES-128-CBC
+const cipher = crypto.createCipheriv("aes-128-cbc", symmetricKey, iv);
 let encryptedData = cipher.update(licenseJson, "utf8", "base64");
 encryptedData += cipher.final("base64");
 
@@ -61,8 +69,9 @@ const signature = sign.sign(privateKey, "base64");
 // Combine all parts into the license key format
 const licenseKey =
   "-----BEGIN LICENSE KEY-----" +
-  `${encryptedSymmetricKey.toString("base64")}||` +
-  `${iv.toString("base64")}${encryptedData}||` +
+  `${symmetricKeyBase64}||` +
+  `${iv.toString("base64")}||` +
+  `${encryptedData}||` +
   `${signature}` +
   "-----END LICENSE KEY-----";
 
@@ -94,20 +103,9 @@ function generateLicenseCert(publicKey, privateKey, licenseKey) {
     },
     {
       name: "commonName",
-      //original issuer: 'C=DE\nST=Berlin\nL=Berlin\nCN=license.n8n.io',
-      // my one: issuer: 'CN=license.n8n.io\nC=DE\nST=Berlin\nL=Berlin',
       value: "license.n8n.io",
     },
-    // {
-    //   name: "organizationName",
-    //   value: "YourCompany",
-    // },
-    // {
-    //   shortName: "OU",
-    //   value: "License Department",
-    // },
   ];
-
   cert.setSubject(attrs);
   cert.setIssuer(attrs);
 
