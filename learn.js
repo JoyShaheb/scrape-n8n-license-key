@@ -162,7 +162,10 @@ let matchedEncryptedSymmetricKey = matched.groups.encryptedSymmetricKey,
   a,
   o;
 
+/**
+ * Everything above this line is working fine
+ */
 // step 7
 
-a = thisKey.decryptPublic(n, "utf8");
-console.log(a);
+// a = thisKey.decryptPublic(matchedEncryptedSymmetricKey, "utf8");
+// console.log(a);
