@@ -65,9 +65,11 @@ const signature = sign.sign(privateKey, "base64");
 // Combine all parts into the license key format
 const licenseKey =
   "-----BEGIN LICENSE KEY-----" +
-  `${encryptedSymmetricKey}||` +
-  `${ivAndEncryptedData}||` +
-  `${signature}` +
+  encryptedSymmetricKey +
+  "||" +
+  ivAndEncryptedData +
+  "||" +
+  signature +
   "-----END LICENSE KEY-----";
 
 // console.log("License Key:");
@@ -185,6 +187,6 @@ let n = matched.groups.encryptedSymmetricKey,
   a,
   o;
 
-a = thisKey.decrypt(n, "utf8");
+a = thisKey.decryptPublic(n, "utf8");
 
 console.log(a);
