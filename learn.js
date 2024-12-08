@@ -107,9 +107,27 @@ const licenseCert = Buffer.from(JSON.stringify(licenseCertObj)).toString(
 );
 
 // decryption mechanism
-
+// step 1
 const { x509: t, licenseKey: n } = JSON.parse(
   Buffer.from(licenseCert, "base64").toString("ascii")
 );
 
-console.log(t, n);
+// step 2
+let x509Cert = new crypto.X509Certificate(t);
+
+// step 3
+let s = x509Cert.publicKey.export({
+  format: "pem",
+  type: "pkcs1",
+});
+
+let thisKey = new NodeRSA(s);
+
+// Step 4
+
+let e = n.replace(/(\r\n|\n|\r)/gm, "");
+let matched = e.match(
+  /^-----BEGIN LICENSE KEY-----(?<encryptedSymmetricKey>.+\|\|)(?<encryptedData>.+)\|\|(?<signature>.+)-----END LICENSE KEY-----$/
+);
+
+console.log(n);
