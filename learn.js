@@ -153,7 +153,7 @@ let matched = e.match(
 
 let matchedEncryptedSymmetricKey = matched.groups.encryptedSymmetricKey,
   i = matched.groups.encryptedData,
-  sss = matched.groups.signature,
+  signt = matched.groups.signature,
   a,
   o;
 
@@ -169,3 +169,6 @@ o = cryptoJS.AES.decrypt(i, a).toString(cryptoJS.enc.Utf8);
  */
 
 // Step 8
+// this.key.verify(Buffer.from(o), s, "utf8", "base64")
+const ccccc = thisKey.verify(Buffer.from(o), signt, "utf8", "base64");
+console.log("ccccc: ", ccccc);
