@@ -157,11 +157,15 @@ let matchedEncryptedSymmetricKey = matched.groups.encryptedSymmetricKey,
   a,
   o;
 
+// step 7
+
+a = thisKey.decryptPublic(matchedEncryptedSymmetricKey, "utf8");
+o = cryptoJS.AES.decrypt(i, a).toString(cryptoJS.enc.Utf8);
+// this is the point where the License data is decrypted
+// console.log("yyyyyy: ", o);
+
 /**
  * Everything above this line is working fine
  */
-// step 7
 
-// a = thisKey.decryptPublic(matchedEncryptedSymmetricKey, "utf8");
-// console.log(a);
-console.log(licenseCert);
+// Step 8
