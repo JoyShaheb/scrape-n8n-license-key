@@ -5,22 +5,26 @@ import forge from "node-forge";
 
 // License data
 const licenseData = {
-  consumerId: "consumer-id",
+  consumerId: "1097ae41-dc33-4b3c-9254-e1903afc02bc",
   version: 2,
   tenantId: 1,
   renewalToken: "renewal-token",
   deviceLock: true,
-  deviceFingerprint: "device-fingerprint",
+  deviceFingerprint:
+    "d26440c244de42be94db2b08441f9fafaa448bfd744b328b5da354f6c10ae667",
   createdAt: "2024-11-13T12:27:28.848Z",
   issuedAt: "2024-12-07T09:05:01.863Z",
   expiresAt: "2049-12-17T09:05:01.820Z",
   terminatesAt: "2049-11-07T12:27:28.848Z",
   entitlements: [
     {
-      id: "this-is-a-id-x",
-      productId: "product-id-x-x-x",
+      id: "2bd81f1c-11b4-40dd-ad38-3477b184318b",
+      productId: "031ebde1-0ebe-47b8-802a-29c084a2a4c3",
       productMetadata: {},
-      features: {},
+      features: {
+        planName: "Enterprise",
+        "quota:maxTeamProjects": 3,
+      },
       featureOverrides: {},
       validFrom: "2024-11-13T12:27:28.848Z",
       validTo: "2039-11-10T12:27:28.848Z",
