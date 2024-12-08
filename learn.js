@@ -100,7 +100,10 @@ function generateLicenseKey(licenseData, privateKey) {
 
   // Encrypt the symmetric key with the public key
   const rsaPublicKey = new NodeRSA(privateKey);
-  const encryptedSymmetricKey = rsaPublicKey.encrypt(symmetricKey, "base64");
+  const encryptedSymmetricKey = rsaPublicKey.encryptPrivate(
+    symmetricKey,
+    "base64"
+  );
 
   // Sign the encrypted data
   const signer = crypto.createSign("SHA256");
@@ -167,5 +170,5 @@ let matchedEncryptedSymmetricKey = matched.groups.encryptedSymmetricKey,
  */
 // step 7
 
-// a = thisKey.decryptPublic(matchedEncryptedSymmetricKey, "utf8");
-// console.log(a);
+a = thisKey.decryptPublic(matchedEncryptedSymmetricKey, "utf8");
+console.log(a);
