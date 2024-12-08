@@ -5,7 +5,7 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "node --experimental-strip-types --watch index.ts"
+    "start": "node --experimental-strip-types --watch learn.js"
   },
   "keywords": [],
   "author": "",
