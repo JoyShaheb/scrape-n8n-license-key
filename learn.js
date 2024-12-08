@@ -81,19 +81,41 @@ function createX509Certificate(licenseData) {
   // Self-sign the certificate
   cert.sign(keys.privateKey);
 
-  return pki.certificateToPem(cert);
+  return {
+    cert: pki.certificateToPem(cert),
+    privateKey: pki.privateKeyToPem(keys.privateKey),
+  };
 }
 
 // Generate license key
-function generateLicenseKey(licenseData) {
-  const dataString = JSON.stringify(licenseData);
-  const hash = crypto.createHash("sha256").update(dataString).digest("hex");
-  return hash.substr(0, 20).toUpperCase();
+function generateLicenseKey(licenseData, privateKey) {
+  // Generate a symmetric key
+  const symmetricKey = crypto.randomBytes(32).toString("hex");
+
+  // Encrypt the license data with the symmetric key
+  const encryptedData = cryptoJS.AES.encrypt(
+    JSON.stringify(licenseData),
+    symmetricKey
+  ).toString();
+
+  // Encrypt the symmetric key with the public key
+  const rsaPublicKey = new NodeRSA(privateKey);
+  const encryptedSymmetricKey = rsaPublicKey.encrypt(symmetricKey, "base64");
+
+  // Sign the encrypted data
+  const signer = crypto.createSign("SHA256");
+  signer.update(encryptedData);
+  const signature = signer.sign(privateKey, "base64");
+
+  // Construct the license key
+  const licenseKey = `-----BEGIN LICENSE KEY-----${encryptedSymmetricKey}||${encryptedData}||${signature}-----END LICENSE KEY-----`;
+
+  return licenseKey;
 }
 
 // Create license certificate and key
-const x509 = createX509Certificate(licenseData);
-const licenseKey = generateLicenseKey(licenseData);
+const { cert: x509, privateKey } = createX509Certificate(licenseData);
+const licenseKey = generateLicenseKey(licenseData, privateKey);
 
 // Create the final licenseCert structure
 const licenseCertObj = {
@@ -121,13 +143,26 @@ let s = x509Cert.publicKey.export({
   type: "pkcs1",
 });
 
+// Step 4
+
 let thisKey = new NodeRSA(s);
 
-// Step 4
+// Step 5
 
 let e = n.replace(/(\r\n|\n|\r)/gm, "");
 let matched = e.match(
   /^-----BEGIN LICENSE KEY-----(?<encryptedSymmetricKey>.+\|\|)(?<encryptedData>.+)\|\|(?<signature>.+)-----END LICENSE KEY-----$/
 );
 
-console.log(n);
+// step 6
+
+let matchedEncryptedSymmetricKey = matched.groups.encryptedSymmetricKey,
+  i = matched.groups.encryptedData,
+  sss = matched.groups.signature,
+  a,
+  o;
+
+// step 7
+
+a = thisKey.decryptPublic(n, "utf8");
+console.log(a);
