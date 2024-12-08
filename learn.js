@@ -5,6 +5,32 @@ import forge from "node-forge";
 
 // License data
 const licenseData = {
+  consumerId: "consumer-id",
+  version: 2,
+  tenantId: 1,
+  renewalToken: "renewal-token",
+  deviceLock: true,
+  deviceFingerprint: "device-fingerprint",
+  createdAt: "2024-11-13T12:27:28.848Z",
+  issuedAt: "2024-12-07T09:05:01.863Z",
+  expiresAt: "2049-12-17T09:05:01.820Z",
+  terminatesAt: "2049-11-07T12:27:28.848Z",
+  entitlements: [
+    {
+      id: "this-is-a-id-x",
+      productId: "product-id-x-x-x",
+      productMetadata: {},
+      features: {},
+      featureOverrides: {},
+      validFrom: "2024-11-13T12:27:28.848Z",
+      validTo: "2039-11-10T12:27:28.848Z",
+      isFloatable: false,
+    },
+  ],
+  managementJwt: "management-id-x-x-x-x-x",
+  isEphemeral: false,
+};
+const licenseDataOriginal = {
   user: "John Doe",
   expirationDate: "2028-12-31",
   features: ["feature1", "feature2"],
@@ -171,4 +197,11 @@ o = cryptoJS.AES.decrypt(i, a).toString(cryptoJS.enc.Utf8);
 // Step 8
 // this.key.verify(Buffer.from(o), s, "utf8", "base64")
 const ccccc = thisKey.verify(Buffer.from(o), signt, "utf8", "base64");
-console.log("ccccc: ", ccccc);
+// console.log("ccccc: ", ccccc);
+
+// step 9
+// const dddddd = JSON.parse(o);
+
+// console.log("ddddd: ", dddddd);
+
+console.log(licenseCert);
