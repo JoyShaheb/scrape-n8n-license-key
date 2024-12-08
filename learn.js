@@ -26,28 +26,20 @@ function createX509Certificate(licenseData) {
 
   const attrs = [
     {
-      name: "commonName",
-      value: licenseData.user,
-    },
-    {
       name: "countryName",
-      value: "US",
+      value: "DE",
     },
     {
       shortName: "ST",
-      value: "Virginia",
+      value: "Berlin",
     },
     {
       name: "localityName",
-      value: "Blacksburg",
+      value: "Berlin",
     },
     {
-      name: "organizationName",
-      value: "Test",
-    },
-    {
-      shortName: "OU",
-      value: "Test",
+      name: "commonName",
+      value: "license.n8n.io",
     },
   ];
 
@@ -170,5 +162,6 @@ let matchedEncryptedSymmetricKey = matched.groups.encryptedSymmetricKey,
  */
 // step 7
 
-a = thisKey.decryptPublic(matchedEncryptedSymmetricKey, "utf8");
-console.log(a);
+// a = thisKey.decryptPublic(matchedEncryptedSymmetricKey, "utf8");
+// console.log(a);
+console.log(licenseCert);
