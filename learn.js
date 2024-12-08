@@ -99,7 +99,7 @@ function generateLicenseKey(licenseData, privateKey) {
 
   // Sign the encrypted data
   const signer = crypto.createSign("SHA256");
-  signer.update(encryptedData);
+  signer.update(JSON.stringify(licenseData));
   const signature = signer.sign(privateKey, "base64");
 
   // Construct the license key
