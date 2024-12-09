@@ -3,15 +3,20 @@ import cryptoJS from "crypto-js";
 import crypto from "crypto";
 import forge from "node-forge";
 
+const N8N_ENCRYPTION_KEY = "some-secret-n8n-encryption-key";
+const generateInstanceId = crypto
+  .createHash("sha256")
+  .update(N8N_ENCRYPTION_KEY.slice(Math.round(N8N_ENCRYPTION_KEY.length / 2)))
+  .digest("hex");
+
 // License data
 const licenseData = {
-  consumerId: "1097ae41-dc33-4b3c-9254-e1903afc02bc",
+  consumerId: "x-x-x-x-x",
   version: 2,
   tenantId: 1,
   renewalToken: "renewal-token",
   deviceLock: true,
-  deviceFingerprint:
-    "d26440c244de42be94db2b08441f9fafaa448bfd744b328b5da354f6c10ae667",
+  deviceFingerprint: generateInstanceId,
   createdAt: "2024-11-13T12:27:28.848Z",
   issuedAt: "2024-12-07T09:05:01.863Z",
   expiresAt: "2049-12-17T09:05:01.820Z",
@@ -56,11 +61,6 @@ const licenseData = {
   ],
   managementJwt: "management-id-x-x-x-x-x",
   isEphemeral: false,
-};
-const licenseDataOriginal = {
-  user: "John Doe",
-  expirationDate: "2028-12-31",
-  features: ["feature1", "feature2"],
 };
 
 // Generate RSA key pair
@@ -232,3 +232,4 @@ const ccccc = thisKey.verify(Buffer.from(o), signt, "utf8", "base64");
 // console.log("ddddd: ", dddddd);
 
 console.log(licenseCert);
+console.log("xxxxx  ", generateInstanceId);
