@@ -19,12 +19,12 @@ const licenseData = {
   deviceFingerprint: generateInstanceId,
   createdAt: "2024-11-13T12:27:28.848Z",
   issuedAt: "2024-12-07T09:05:01.863Z",
-  expiresAt: "2049-12-17T09:05:01.820Z",
-  terminatesAt: "2049-11-07T12:27:28.848Z",
+  expiresAt: "2099-12-17T09:05:01.820Z",
+  terminatesAt: "2099-11-07T12:27:28.848Z",
   entitlements: [
     {
-      id: "2bd81f1c-11b4-40dd-ad38-3477b184318b",
-      productId: "031ebde1-0ebe-47b8-802a-29c084a2a4c3",
+      id: "x-x-x-x-x",
+      productId: "x-x-x-x-x",
       productMetadata: {},
       features: {
         planName: "Enterprise",
@@ -55,16 +55,13 @@ const licenseData = {
       },
       featureOverrides: {},
       validFrom: "2024-11-13T12:27:28.848Z",
-      validTo: "2039-11-10T12:27:28.848Z",
+      validTo: "2099-11-10T12:27:28.848Z",
       isFloatable: false,
     },
   ],
   managementJwt: "management-id-x-x-x-x-x",
   isEphemeral: false,
 };
-
-// Generate RSA key pair
-const key = new NodeRSA({ b: 2048 });
 
 // Create X.509 certificate
 function createX509Certificate(licenseData) {
